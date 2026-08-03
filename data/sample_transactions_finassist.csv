@@ -1,0 +1,36 @@
+Date,Description,Category,Type,Amount,Payment_Method
+2026-01-02,Salary Credit,Income,Income,65000,Bank Transfer
+2026-01-03,House Rent,Housing,Expense,15000,UPI
+2026-01-05,Swiggy Order,Food,Expense,480,UPI
+2026-01-06,Uber Ride,Transportation,Expense,320,UPI
+2026-01-08,Electricity Bill,Utilities,Expense,2100,Net Banking
+2026-01-10,Amazon Shopping,Shopping,Expense,3499,Credit Card
+2026-01-12,Movie Tickets,Entertainment,Expense,850,Credit Card
+2026-01-14,Apollo Pharmacy,Healthcare,Expense,920,UPI
+2026-01-15,Internet Bill,Utilities,Expense,999,UPI
+2026-01-18,Fuel,Transportation,Expense,1800,Credit Card
+2026-01-20,Freelance Payment,Income,Income,12000,Bank Transfer
+2026-01-22,Restaurant Dinner,Food,Expense,1450,Credit Card
+2026-01-25,Gym Membership,Healthcare,Expense,1200,UPI
+2026-01-27,Book Purchase,Education,Expense,799,UPI
+2026-01-30,Mutual Fund SIP,Savings,Expense,5000,Auto Debit
+2026-02-01,Salary Credit,Income,Income,65000,Bank Transfer
+2026-02-03,House Rent,Housing,Expense,15000,UPI
+2026-02-05,BigBasket,Food,Expense,2350,UPI
+2026-02-08,Electricity Bill,Utilities,Expense,2250,Net Banking
+2026-02-11,Amazon Shopping,Shopping,Expense,2899,Credit Card
+2026-02-15,Uber Ride,Transportation,Expense,420,UPI
+2026-02-18,Netflix,Entertainment,Expense,649,Credit Card
+2026-02-20,Doctor Consultation,Healthcare,Expense,1500,UPI
+2026-02-23,Course Fee,Education,Expense,3500,Net Banking
+2026-02-28,Mutual Fund SIP,Savings,Expense,5000,Auto Debit
+2026-03-01,Salary Credit,Income,Income,65000,Bank Transfer
+2026-03-03,House Rent,Housing,Expense,15000,UPI
+2026-03-05,Zomato,Food,Expense,690,UPI
+2026-03-07,Fuel,Transportation,Expense,2100,Credit Card
+2026-03-10,Electricity Bill,Utilities,Expense,2400,Net Banking
+2026-03-13,Flipkart,Shopping,Expense,4599,Credit Card
+2026-03-17,Movie Tickets,Entertainment,Expense,700,Credit Card
+2026-03-19,Medicine,Healthcare,Expense,1150,UPI
+2026-03-22,Online Course,Education,Expense,2500,Credit Card
+2026-03-31,Mutual Fund SIP,Savings,Expense,5000,Auto Debit
