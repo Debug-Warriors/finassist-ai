@@ -1,12 +1,13 @@
 """
-supervisor.py
--------------
-LLM-powered Supervisor Agent.
+agents/supervisor.py
+--------------------
 
-Responsible for:
-1. Understanding the user's request.
-2. Deciding which AI agents should execute.
-3. Creating an execution plan.
+Supervisor Agent
+
+Responsibilities:
+- Understand user intent
+- Decide which agents should execute
+- Generate execution plan
 """
 
 import json
@@ -24,29 +25,32 @@ AVAILABLE_AGENTS = [
 
 
 SYSTEM_PROMPT = """
-You are the Supervisor Agent for FinAssist AI.
+You are the Supervisor Agent of FinAssist AI.
 
-Your job is to determine which agents should execute.
+Your job is to understand the user's request and decide
+which agents should execute.
 
 Available agents:
 
 1. expense_tracker
    - Analyze transactions
-   - Calculate income
-   - Calculate expenses
-   - Category-wise spending
+   - Income
+   - Expenses
+   - Savings
+   - Spending summary
 
 2. budget_planner
-   - Generate monthly budget
-   - Budget allocation
+   - Monthly budget
+   - Budget comparison
 
 3. financial_advisor
-   - Savings recommendations
-   - Financial advice
+   - Recommendations
+   - Financial health
+   - Saving suggestions
 
 4. forecasting_agent
    - Predict future expenses
-   - Forecast trends
+   - Spending trends
 
 Return ONLY valid JSON.
 
@@ -63,12 +67,24 @@ Example:
 
 def supervisor_node(state: FinancialState) -> FinancialState:
     """
-    Determines which agents should run.
+    Decide which agents should execute.
     """
 
     query = state["query"]
 
-    prompt = f"""
+    try:
+
+        response = llm.invoke(
+
+            [
+
+                ("system", SYSTEM_PROMPT),
+
+                (
+
+                    "human",
+
+                    f"""
 User Query:
 
 {query}
@@ -76,16 +92,17 @@ User Query:
 Return ONLY JSON.
 """
 
-    try:
+                )
 
-        response = llm.invoke(
-            [
-                ("system", SYSTEM_PROMPT),
-                ("human", prompt)
             ]
+
         )
 
         content = response.content.strip()
+
+        # Remove markdown if Llama returns ```json
+        content = content.replace("```json", "")
+        content = content.replace("```", "").strip()
 
         result = json.loads(content)
 
@@ -95,9 +112,13 @@ Return ONLY JSON.
         )
 
         execution_plan = [
+
             agent
+
             for agent in execution_plan
+
             if agent in AVAILABLE_AGENTS
+
         ]
 
         if not execution_plan:
@@ -106,6 +127,7 @@ Return ONLY JSON.
 
     except Exception:
 
+        # Safe fallback
         execution_plan = AVAILABLE_AGENTS.copy()
 
     state["execution_plan"] = execution_plan

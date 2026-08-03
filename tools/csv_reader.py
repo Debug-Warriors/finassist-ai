@@ -1,80 +1,222 @@
+"""
+tools/csv_reader.py
+-------------------
+
+Loads and validates transaction datasets.
+
+Supported:
+- CSV
+- Excel (.xlsx)
+"""
+
+from pathlib import Path
+from typing import Union
+
+import pandas as pd
+
+from config import REQUIRED_COLUMNS
+
+
+from pathlib import Path
+from typing import Union
 import pandas as pd
 
 
-REQUIRED_COLUMNS = [
-    "Date",
-    "Description",
-    "Category",
-    "Type",
-    "Amount"
-]
+class CSVReader:
 
+    @staticmethod
+    def load(file: Union[str, Path, object]) -> pd.DataFrame:
+        """
+        Load CSV or Excel file.
 
-def load_transactions(file_path: str) -> pd.DataFrame:
-    """
-    Load transaction data from a CSV file.
+        Supports:
+        - File path
+        - Streamlit UploadedFile
+        """
 
-    Args:
-        file_path (str): Path to the CSV file.
+        # Streamlit UploadedFile
+        if hasattr(file, "name"):
+            filename = file.name.lower()
+        else:
+            filename = str(file).lower()
 
-    Returns:
-        pd.DataFrame: Loaded transaction data.
-    """
+        if filename.endswith(".csv"):
+            df = pd.read_csv(file)
 
-    try:
-        df = pd.read_csv(file_path)
+        elif filename.endswith(".xlsx"):
+            df = pd.read_excel(file)
 
-        validate_transactions(df)
+        else:
+            raise ValueError(
+                "Unsupported file format. Use CSV or XLSX."
+            )
 
-        df = clean_transactions(df)
+        return CSVReader.validate(df)
+
+    @staticmethod
+    def validate(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Validate dataset.
+        """
+
+        # -----------------------------------
+        # Required Columns
+        # -----------------------------------
+
+        missing_columns = [
+            column
+            for column in REQUIRED_COLUMNS
+            if column not in df.columns
+        ]
+
+        if missing_columns:
+
+            raise ValueError(
+                f"Missing columns: {missing_columns}"
+            )
+
+        # -----------------------------------
+        # Convert Date
+        # -----------------------------------
+
+        df["Date"] = pd.to_datetime(
+            df["Date"],
+            errors="coerce"
+        )
+
+        # -----------------------------------
+        # Convert Amount
+        # -----------------------------------
+
+        df["Amount"] = pd.to_numeric(
+            df["Amount"],
+            errors="coerce"
+        )
+
+        # -----------------------------------
+        # Remove Invalid Rows
+        # -----------------------------------
+
+        df.dropna(
+            subset=[
+                "Date",
+                "Amount"
+            ],
+            inplace=True
+        )
+
+        # -----------------------------------
+        # Remove Duplicate Rows
+        # -----------------------------------
+
+        df.drop_duplicates(
+            inplace=True
+        )
+
+        # -----------------------------------
+        # Clean Text Columns
+        # -----------------------------------
+
+        text_columns = [
+
+            "Description",
+
+            "Category",
+
+            "Type",
+
+            "Payment_Method"
+
+        ]
+
+        for column in text_columns:
+
+            df[column] = (
+
+                df[column]
+
+                .astype(str)
+
+                .str.strip()
+
+                .str.title()
+
+            )
+
+        # -----------------------------------
+        # Validate Transaction Type
+        # -----------------------------------
+
+        valid_types = {
+
+            "Income",
+
+            "Expense"
+
+        }
+
+        invalid = df[
+            ~df["Type"].isin(valid_types)
+        ]
+
+        if not invalid.empty:
+
+            raise ValueError(
+                "Type column must contain only Income or Expense."
+            )
+
+        # -----------------------------------
+        # Sort by Date
+        # -----------------------------------
+
+        df.sort_values(
+            by="Date",
+            inplace=True
+        )
+
+        df.reset_index(
+            drop=True,
+            inplace=True
+        )
 
         return df
 
-    except FileNotFoundError:
-        raise FileNotFoundError(f"File not found: {file_path}")
+    @staticmethod
+    def preview(
+        df: pd.DataFrame,
+        rows: int = 5
+    ) -> pd.DataFrame:
+        """
+        Return preview rows.
+        """
 
-    except Exception as e:
-        raise Exception(f"Error reading CSV: {e}")
+        return df.head(rows)
 
+    @staticmethod
+    def info(df: pd.DataFrame) -> dict:
+        """
+        Dataset summary.
+        """
 
-def validate_transactions(df: pd.DataFrame):
-    """
-    Validate required columns.
-    """
+        return {
 
-    missing_columns = [
-        column
-        for column in REQUIRED_COLUMNS
-        if column not in df.columns
-    ]
+            "rows": len(df),
 
-    if missing_columns:
-        raise ValueError(
-            f"Missing required columns: {missing_columns}"
-        )
+            "columns": len(df.columns),
 
+            "income_records": len(
+                df[df["Type"] == "Income"]
+            ),
 
-def clean_transactions(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Clean transaction data.
-    """
+            "expense_records": len(
+                df[df["Type"] == "Expense"]
+            ),
 
-    df = df.copy()
+            "date_range": (
 
-    # Remove empty rows
-    df.dropna(how="all", inplace=True)
+                str(df["Date"].min().date()),
 
-    # Remove leading/trailing spaces
-    df.columns = df.columns.str.strip()
+                str(df["Date"].max().date())
 
-    df["Description"] = df["Description"].astype(str).str.strip()
-    df["Category"] = df["Category"].astype(str).str.strip()
-    df["Type"] = df["Type"].astype(str).str.strip()
-
-    # Convert Date
-    df["Date"] = pd.to_datetime(df["Date"])
-
-    # Convert Amount
-    df["Amount"] = pd.to_numeric(df["Amount"])
-
-    return df
+            )
+        }
